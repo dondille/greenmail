@@ -72,6 +72,8 @@ public class ImapCommandFactory {
         imapCommands.put(SetQuotaCommand.NAME, SetQuotaCommand.class);
         imapCommands.put(QuotaCommand.NAME, QuotaCommand.class);
         imapCommands.put(QuotaRootCommand.NAME, QuotaRootCommand.class);
+
+        imapCommands.put(MoveCommand.NAME, MoveCommand.class);
     }
 
     public ImapCommand getCommand(String commandName) {

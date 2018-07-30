@@ -203,6 +203,11 @@ public class ImapSessionFolder implements MailFolder, FolderListener, UIDFolder 
     }
 
     @Override
+    public long appendMovedMessage(MimeMessage message, Flags flags, Date internalDate, String xGuid) {
+        return folder.appendMovedMessage(message, flags, internalDate, xGuid);
+    }
+
+    @Override
     public void store(MovingMessage mail) throws Exception {
         folder.store(mail);
     }
@@ -240,6 +245,11 @@ public class ImapSessionFolder implements MailFolder, FolderListener, UIDFolder 
     @Override
     public long copyMessage(long uid, MailFolder toFolder) throws FolderException {
         return folder.copyMessage(uid, toFolder);
+    }
+
+    @Override
+    public long moveMessage(long uid, MailFolder toFolder) throws FolderException {
+        return folder.moveMessage(uid, toFolder);
     }
 
     @Override

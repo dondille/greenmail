@@ -57,6 +57,9 @@ public interface MailFolder {
      */
     long appendMessage(MimeMessage message, Flags flags, Date internalDate);
 
+    long appendMovedMessage(MimeMessage message, Flags flags, Date internalDate, String xGuid);
+
+
     void deleteAllMessages();
 
     void expunge() throws FolderException;
@@ -83,6 +86,9 @@ public interface MailFolder {
     long[] search(SearchTerm searchTerm);
 
     long copyMessage(long uid, MailFolder toFolder)
+            throws FolderException;
+
+    long moveMessage(long uid, MailFolder toFolder)
             throws FolderException;
 
     void setFlags(Flags flags, boolean value, long uid, FolderListener silentListener, boolean addUid) throws FolderException;

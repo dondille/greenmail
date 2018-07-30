@@ -24,6 +24,10 @@ public class StoredMessage {
     private UidAwareMimeMessage mimeMessage;
     private Date receivedDate;
     private long uid;
+
+    private String xGuid;
+    private String xMailbox;
+
     private SimpleMessageAttributes attributes;
 
     /**
@@ -65,9 +69,12 @@ public class StoredMessage {
     }
 
     StoredMessage(MimeMessage mimeMessage,
-            Date receivedDate, long uid) {
+            Date receivedDate, long uid,
+                  String xGuid, String xMailbox) {
         this.receivedDate = receivedDate;
         this.uid = uid;
+        this.xGuid = xGuid;
+        this.xMailbox = xMailbox;
         try {
             this.mimeMessage = new UidAwareMimeMessage(mimeMessage, uid, receivedDate);
             this.attributes = new SimpleMessageAttributes(mimeMessage, receivedDate);
@@ -118,6 +125,14 @@ public class StoredMessage {
 
     public long getUid() {
         return uid;
+    }
+
+    public String getXGuid() {
+        return xGuid;
+    }
+
+    public String getXMailbox() {
+        return xMailbox;
     }
 
     public MailMessageAttributes getAttributes() throws FolderException {

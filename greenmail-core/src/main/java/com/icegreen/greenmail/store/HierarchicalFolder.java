@@ -4,18 +4,18 @@
  */
 package com.icegreen.greenmail.store;
 
-import java.util.*;
+import com.icegreen.greenmail.foedus.util.MsgRangeFilter;
+import com.icegreen.greenmail.imap.ImapConstants;
+import com.icegreen.greenmail.imap.commands.IdRange;
+import com.icegreen.greenmail.mail.MovingMessage;
+
 import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.UIDFolder;
 import javax.mail.internet.MimeMessage;
 import javax.mail.search.SearchTerm;
-
-import com.icegreen.greenmail.foedus.util.MsgRangeFilter;
-import com.icegreen.greenmail.imap.ImapConstants;
-import com.icegreen.greenmail.imap.commands.IdRange;
-import com.icegreen.greenmail.mail.MovingMessage;
+import java.util.*;
 
 /**
  * @author Raimund Klein <raimund.klein@gmx.de>
@@ -235,10 +235,20 @@ class HierarchicalFolder implements MailFolder, UIDFolder {
         isSelectable = selectable;
     }
 
+
     @Override
-    public long appendMessage(MimeMessage message,
+    public long appendMessage(MimeMessage message, Flags flags, Date internalDate) {
+        return appendMessage(message, flags, internalDate, null);
+    }
+
+    @Override
+    public long appendMovedMessage(MimeMessage message, Flags flags, Date internalDate, String xGuid) {
+        return appendMessage(message, flags, internalDate, xGuid);
+    }
+
+    long appendMessage(MimeMessage message,
                               Flags flags,
-                              Date receivedDate) {
+                              Date receivedDate, String xGuid) {
         long uid = nextUid;
         nextUid++;
 
@@ -248,8 +258,9 @@ class HierarchicalFolder implements MailFolder, UIDFolder {
         } catch (MessagingException e) {
             throw new IllegalStateException("Can not set flags", e);
         }
+
         StoredMessage storedMessage = new StoredMessage(message,
-                receivedDate, uid);
+                receivedDate, uid, xGuid == null ? UUID.randomUUID().toString() : xGuid, getName());
 
         int newMsn;
         synchronized (mailMessages) {
@@ -266,6 +277,9 @@ class HierarchicalFolder implements MailFolder, UIDFolder {
 
         return uid;
     }
+
+
+
 
     @Override
     public void setFlags(Flags flags, boolean value, long uid, FolderListener silentListener, boolean addUid) throws FolderException {
@@ -381,6 +395,27 @@ class HierarchicalFolder implements MailFolder, UIDFolder {
         }
 
         return toFolder.appendMessage(newMime, originalMessage.getFlags(), originalMessage.getReceivedDate());
+    }
+
+    @Override
+    public long moveMessage(long uid, MailFolder toFolder) throws FolderException {
+        StoredMessage originalMessage = getMessage(uid);
+        MimeMessage newMime;
+        try {
+            newMime = new MimeMessage(originalMessage.getMimeMessage());
+        } catch (MessagingException e) {
+            throw new FolderException("Can not move message " + uid + " to folder " + toFolder, e);
+        }
+
+        long copiedUid = toFolder.appendMovedMessage(newMime, originalMessage.getFlags(), originalMessage.getReceivedDate(), originalMessage.getXGuid());
+
+        // mark as deleted
+        originalMessage.setFlags(new Flags(Flags.Flag.DELETED), true);
+
+        // delete
+        expunge(new IdRange[]{new IdRange(uid)});
+
+        return copiedUid;
     }
 
     @Override

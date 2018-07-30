@@ -155,6 +155,18 @@ class FetchCommand extends SelectedStateCommand implements UidEnabledCommand {
             response.append(message.getUid());
         }
 
+        // X-GUID response
+        if (fetch.xGuid) {
+            response.append(" X-GUID ");
+            response.append(message.getXGuid());
+        }
+
+        // X-Mailbox response
+        if (fetch.xMailbox) {
+            response.append(" X-MAILBOX ");
+            response.append(message.getXMailbox());
+        }
+
         // BODY part responses.
         Collection<BodyFetchElement> elements = fetch.getBodyElements();
         for (BodyFetchElement fetchElement : elements) {
@@ -425,6 +437,10 @@ class FetchCommand extends SelectedStateCommand implements UidEnabledCommand {
                     fetch.bodyStructure = true;
                 } else if ("UID".equalsIgnoreCase(name)) {
                     fetch.uid = true;
+                } else if ("X-GUID".equalsIgnoreCase(name)) {
+                    fetch.xGuid = true;
+                } else if ("X-MAILBOX".equalsIgnoreCase(name)) {
+                    fetch.xMailbox = true;
                 } else if ("RFC822".equalsIgnoreCase(name)) {
                     fetch.add(new BodyFetchElement("RFC822", ""), false);
                 } else if ("RFC822.HEADER".equalsIgnoreCase(name)) {
@@ -508,7 +524,12 @@ class FetchCommand extends SelectedStateCommand implements UidEnabledCommand {
         boolean body;
         boolean bodyStructure;
 
+        boolean xGuid;
+        boolean xMailbox;
+
         private boolean setSeen = false;
+
+
 
         private Set<BodyFetchElement> bodyElements = new HashSet<>();
 
